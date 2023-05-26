@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="resources">
+    <file>images/Profile_Image_Dark_v.png</file>
+    <file>images/Logo.png</file>
+    <file>images/Logo@2x.png</file>
+  </qresource>
+</RCC>
