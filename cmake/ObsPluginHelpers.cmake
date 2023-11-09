@@ -296,12 +296,15 @@ if(OS_MACOS)
 
   set_property(CACHE CMAKE_OSX_DEPLOYMENT_TARGET PROPERTY STRINGS 13.0 12.0 11.0 10.15)
 
-  # Override macOS install directory
+  # Override macOS install directory Use Applications directory as default install destination
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX
-        ${CMAKE_BINARY_DIR}/install
-        CACHE STRING "Directory to install OBS to after building" FORCE)
+        "$ENV{HOME}/Library/Application Support/obs-studio/plugins"
+        CACHE STRING "Directory to install OBS after building" FORCE)
   endif()
+
+  # Enable find_package targets to become globally available targets
+  set(CMAKE_FIND_PACKAGE_TARGETS_GLOBAL TRUE)
 
   # Set up codesigning for Xcode builds with team IDs or standalone builds with developer identity
   if(NOT OBS_BUNDLE_CODESIGN_TEAM)
@@ -311,6 +314,15 @@ if(OS_MACOS)
           CACHE STRING "OBS code signing identity for macOS" FORCE)
     endif()
     set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY ${OBS_BUNDLE_CODESIGN_IDENTITY})
+    set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_STYLE Manual)
+    # Enable codesigning with hardened runtime option when not in Debug configuration (required for
+    # Notarization)
+    set(CMAKE_XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES)
+    # Disable injection of Xcode's base entitlements used for debugging when not in Debug
+    # configuration (required for Notarization)
+    set(CMAKE_XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO)
+    # Enable codesigning with secure timestamp (required for Notarization)
+    set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--timestamp")
   else()
     # Team ID specified, warn if Xcode generator is not used and fall back to ad-hoc signing
     if(NOT XCODE)
@@ -454,6 +466,11 @@ if(OS_MACOS)
     endif()
 
     install_bundle_resources(${target})
+    configure_file(cmake/bundle/macos/distribution.in "${CMAKE_CURRENT_BINARY_DIR}/distribution"
+                   @ONLY)
+    configure_file(cmake/bundle/macos/create-package.cmake.in
+                   "${CMAKE_CURRENT_BINARY_DIR}/create-package.cmake" @ONLY)
+    install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/create-package.cmake")
   endfunction()
 
   # Helper function to add resources from "data" directory as bundle resources
@@ -466,7 +483,7 @@ if(OS_MACOS)
         target_sources(${target} PRIVATE ${_DATA_FILE})
         set_source_files_properties(${_DATA_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION
                                                              Resources/${_RELATIVE_PATH})
-        string(REPLACE "\\" "\\\\" _GROUP_NAME ${_RELATIVE_PATH})
+        string(REPLACE "\\" "\\\\" _GROUP_NAME "${_RELATIVE_PATH}")
         source_group("Resources\\${_GROUP_NAME}" FILES ${_DATA_FILE})
       endforeach()
     endif()

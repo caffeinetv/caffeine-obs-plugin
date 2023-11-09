@@ -42,7 +42,7 @@ package() {
   autoload -Uz set_loglevel log_info log_error log_output check_${host_os}
 
   local -i _verbosity=1
-  local -r _version='1.0.5'
+  local -r _version='1.0.6'
   local -r -a _valid_targets=(
     macos-x86_64
     macos-arm64
@@ -129,7 +129,7 @@ Usage: %B${functrace[1]%:*}%b <option> [<options>]
     "$(jq -r '. | {name, version} | join(" ")' ${project_root}/buildspec.json)"
 
   if [[ ${host_os} == 'macos' ]] {
-    autoload -Uz check_packages read_codesign read_codesign_installer read_codesign_pass
+    autoload -Uz read_codesign read_codesign_installer read_codesign_pass
 
     local output_name="${product_name}-${product_version}-${host_os}-${target##*-}.pkg"
 
@@ -138,18 +138,13 @@ Usage: %B${functrace[1]%:*}%b <option> [<options>]
       return 2
     }
 
-    if [[ ! -f ${project_root}/build_${target##*-}/installer-macos.generated.pkgproj ]] {
-      log_error 'Packages project file not found. Run the build script or the CMake build and install procedures first.'
+    if [[ ! -f ${project_root}/release/${product_name}.pkg ]] {
+      log_error 'Installer Packages project file not found. Run the build script or the CMake build and install procedures first.'
       return 2
     }
 
-    check_packages
-
     log_info "Packaging ${product_name}..."
     pushd ${project_root}
-    packagesbuild \
-      --build-folder ${project_root}/release \
-      ${project_root}/build_${target##*-}/installer-macos.generated.pkgproj
 
     if (( ${+CODESIGN} )) {
       read_codesign_installer

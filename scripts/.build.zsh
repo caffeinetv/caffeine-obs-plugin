@@ -51,7 +51,7 @@ build() {
 
   typeset -g -a skips=()
   local -i _verbosity=1
-  local -r _version='1.0.5'
+  local -r _version='1.0.6'
   local -r -a _valid_targets=(
     macos-x86_64
     macos-arm64
@@ -198,9 +198,11 @@ Usage: %B${functrace[1]%:*}%b <option> [<options>]
 
     case ${target} {
       macos-*)
-        autoload -Uz read_codesign
+        autoload -Uz read_codesign_team && read_codesign_team
         if (( ${+CODESIGN} )) {
-          read_codesign
+          if [[ -z ${CODESIGN_TEAM} ]] {
+            autoload -Uz read_codesign && read_codesign
+          }
         }
 
         cmake_args+=(
@@ -209,6 +211,7 @@ Usage: %B${functrace[1]%:*}%b <option> [<options>]
           -DCMAKE_OSX_DEPLOYMENT_TARGET=${DEPLOYMENT_TARGET:-10.15}
           -DOBS_CODESIGN_LINKER=ON
           -DOBS_BUNDLE_CODESIGN_IDENTITY="${CODESIGN_IDENT:--}"
+          -DCODESIGN_TEAM=${CODESIGN_TEAM:-}
         )
         num_procs=$(( $(sysctl -n hw.ncpu) + 1 ))
         ;;

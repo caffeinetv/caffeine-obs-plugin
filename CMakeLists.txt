@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16...3.21)
 
-project(caffeine-obs-plugin VERSION 1.0.5)
+project(caffeine-obs-plugin VERSION 1.0.6)
 add_library(${CMAKE_PROJECT_NAME} MODULE)
 
 set(PLUGIN_AUTHOR "Caffeine")
@@ -18,6 +18,12 @@ option(BUILD_TESTING "Build unit tests." ON)
 set(MACOS_PACKAGE_UUID "6D335328-285D-44A1-AB9D-7BA9222130F5")
 set(MACOS_INSTALLER_UUID "017640FD-544F-4CA5-858E-600AC2543367")
 set(WINDOWS_APP_ID "26FCEE78-C1C3-4072-9E51-659186537B5E")
+
+# Enable default inclusion of targets' source and binary directory
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
+if(XCODE)
+  include(cmake/xcode.cmake)
+endif()
 
 # include curl
 find_package(CURL REQUIRED)
@@ -145,9 +151,6 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 
   # -- macOS specific build settings and tasks --
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-  configure_file(cmake/bundle/macos/installer-macos.pkgproj.in
-                 ${CMAKE_BINARY_DIR}/installer-macos.generated.pkgproj)
-
   set(MACOSX_PLUGIN_GUI_IDENTIFIER "${MACOS_BUNDLEID}")
   set(MACOSX_PLUGIN_BUNDLE_VERSION "${CMAKE_PROJECT_VERSION}")
   set(MACOSX_PLUGIN_SHORT_VERSION_STRING "${CMAKE_PROJECT_VERSION}")
