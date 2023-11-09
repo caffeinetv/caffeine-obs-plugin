@@ -36,6 +36,7 @@ class CaffeineDockWindow : public QDockWidget {
 public:
 	explicit CaffeineDockWindow(QWidget *parent = nullptr);
 	~CaffeineDockWindow();
+	void stopStreaming();
 
 private:
 	std::optional<std::string> refreshToken_;

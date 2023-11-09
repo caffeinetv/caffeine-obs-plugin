@@ -57,7 +57,11 @@ bool obs_module_load(void)
 					     "Obs started frontend streaming");
 				} else if (event ==
 					   OBS_FRONTEND_EVENT_STREAMING_STOPPED) {
-					// Stop heartbeat
+					// Stop Caffeine Stream
+					CaffeineDockWindow *caffeineDockWindow =
+						static_cast<CaffeineDockWindow *>(
+							private_data);
+					caffeineDockWindow->stopStreaming();
 					blog(LOG_INFO,
 					     "Obs ended frontend streaming");
 				}

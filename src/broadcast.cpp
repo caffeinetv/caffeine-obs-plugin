@@ -336,7 +336,7 @@ void Broadcast::startHeartbeat(std::function<void()> startedCallback)
 					failures);
 				failedCallback_(
 					SessionAuthResponse::Disconnected);
-				return;
+				break;
 			}
 		}
 	}
@@ -353,10 +353,7 @@ void Broadcast::stop()
 	subscription_ = nullptr;
 	try {
 		if (broadcastThread_.joinable()) {
-			std::thread([&]() {
-				// Async join so we don't block this thread
-				broadcastThread_.join();
-			}).detach();
+			broadcastThread_.join();
 		}
 	} catch (std::system_error ex) {
 		CAFF_LOG_ERROR("Caught system error when stopping broadcast %s",

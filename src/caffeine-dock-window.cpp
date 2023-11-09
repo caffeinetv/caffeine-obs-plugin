@@ -112,6 +112,12 @@ CaffeineDockWindow::~CaffeineDockWindow()
 	delete ui;
 }
 
+void CaffeineDockWindow::stopStreaming()
+{
+	auto currentInstance = caff::Instance::getInstance();
+	currentInstance->endBroadcast();
+}
+
 void CaffeineDockWindow::showErrorDialog(QString error)
 {
 	QWidget *obsWindow = (QWidget *)obs_frontend_get_main_window();
@@ -440,10 +446,8 @@ void CaffeineDockWindow::streamStarted(void *userData)
 void CaffeineDockWindow::streamFailed(void *userData, SessionAuthResponse error)
 {
 	auto *context = reinterpret_cast<CaffeineDockWindow *>(userData);
-	auto currentInstance = caff::Instance::getInstance();
 	if (obs_frontend_streaming_active()) {
 		obs_frontend_streaming_stop();
-		currentInstance->endBroadcast();
 		QMetaObject::invokeMethod(context, "clearSrtURL");
 		QMetaObject::invokeMethod(context, "setOfflineUI");
 	}
